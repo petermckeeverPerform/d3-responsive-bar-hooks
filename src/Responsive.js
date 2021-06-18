@@ -15,42 +15,55 @@ const Chart = () => {
   const d3Chart = useRef()
 
   const [dimensions, setDimensions] = useState({
-      width: window.innerWidth / 2,
-      height: window.innerWidth / 4
+      width: null,
+      height: null,
+      resize: false
   })
 
   const update = useRef(false)
-  
+
   useEffect(() => {
-
     const resize = () => {
-        if (window.innerWidth > 800) {
-            setDimensions({
-                width: 800,
-                height: 400
-            })
-        }
-        else {
-            setDimensions({
-                width: window.innerWidth,
-                height: window.innerWidth / 2
-            })
-        }
+      if (window.innerWidth > 800) {
+          setDimensions({
+              width: 800,
+              height: 400,
+              resize: true
+          })
+      }
+      else {
+          setDimensions({
+              width: window.innerWidth,
+              height: window.innerWidth / 2,
+              resize: true
+          })
+      }  
+  };
 
-        if(update) {
-            d3.selectAll("g").remove()
-        } else {
-            update.current = true
-        }   
-    };
-    const debounceResize = debounce(resize , 150)
+  const debounceResize = debounce(resize , 150)
 
-    window.addEventListener("resize", debounceResize);
-
-    drawChart(sample, dimensions)
+  if (!dimensions.resize) {
+    debounceResize()
     
-    return () => window.removeEventListener("resize", debounceResize);
+  }
 
+  window.addEventListener("resize", debounceResize);
+  return () => window.removeEventListener("resize", debounceResize);
+
+  
+  }, [dimensions]);
+  
+  useEffect(() =>  {
+    
+    if(update) {
+      d3.selectAll("g").remove()
+  } else {
+      update.current = true
+  }   
+
+  if (dimensions.resize){
+  drawChart(sample, dimensions)
+}
   }, [dimensions])
 
 
@@ -60,6 +73,7 @@ const Chart = () => {
     const margin = {top: 50, right: 30, bottom: 30, left: 60}
 
     console.log(dimensions)
+
     const chartWidth = dimensions.width
     const chartHeight = dimensions.height
 
